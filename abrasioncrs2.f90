@@ -50,7 +50,6 @@ Mp = Ap1*amt                    ! Projectile total mass
 Mt = At1*amt                    ! Target total mass
 
 ! The values for density parameters taken from Dejager and Devries..
-! Call Density function %
 ! Calcualte the Gauss density constants
 call density(Ap1, cCp, cDp)
 call density(At1, cCt, cDt)
@@ -60,8 +59,6 @@ a1= -1; b1 = 1
 call lgwt(x1,w1,Ninterp,a1,b1)
 Mp = Ap1*amt                        ! Projectile total mass
 Mt = At1*amt                        ! Target total mass
-
-! The values for density parameters taken from Dejager and Dev
 
 ! Calcualtion of energy and momentum in lab and projectile frame
 Elab      = Tlab1+am
@@ -86,7 +83,7 @@ else ! Tlab1>25
 endif
 Sigpn  = (38.+12500.*exp(-1.187*(((Tlab1-0.1)**0.35))))/10.
 Sig    = ((dble(Np+Nt)/dble(Ap1+At1))*Sigpn) + Sigpp*(dble(Zp1*Zt1+Np*Nt))/dble(Ap1*At1)
-print *,"Sigpp, Sigpn,Sig ",Sigpp, Sigpn,Sig
+!print *,"Sigpp, Sigpn,Sig ",Sigpp, Sigpn,Sig
 
 ! Calculate the constant values for the potential
 W      = cDp + (1./(2.*B))
@@ -102,28 +99,28 @@ do i = 1, Ninterp
   wb(i)     = (pi/4.)*w1(i)/((cos(triarg(i)))*(cos(triarg(i))))
 enddo
 
-!$omp parallel do
-do n = 1, Ninterp ! ondrejch done todo - remove sections 1,2 from inner loop
-    argb(n) = xb(n)
-    Xx1(n)  = (M1/2.)*((pi/N1)**0.5)*exp(-N1*(argb(n))**2)
-    Xx2(n)  = (1./(4.*K))*((M1**2))*((pi/((2*N1)))**0.5)*((4.*N1*(argb(n))**2)+1.)*exp(-2*N1*(argb(n)**2))
-    Xx3(n)  = -1.*(((M1)**3)/(12.*K**2))*((pi/(3.*N1))**0.5)*((argb(n))**2)*(-1.*(36.*(N1)**2*((argb(n))**2)))*exp(-3.*N1*(argb(n))**2)
-    Xx4(n)  = (1.*(M1**4)/(48.*K**3))*((pi/(4.*N1))**0.5)*((-24.*N1*((argb(n))**2))-(192.*(N1**2)*(argb(n)**4))+(512.*(N1**3)*(argb(n)**6))-(3.))*exp((-4.*N1*(argb(n))**2))
-    Xx5(n)  = -(1.*(M1**5)/(240.*K**4))*((pi/(5.*N1))**0.5)*((8000.*(N1**3)*(argb(n)**6))-(10000.*(N1**4)*(argb(n)**8)))*exp((-5.*N1*(argb(n))**2))
+!$omp parallel do 
+do n = 1, Ninterp 
+  argb(n) = xb(n)
+  Xx1(n)  = (M1/2.)*((pi/N1)**0.5)*exp(-N1*(argb(n))**2)
+  Xx2(n)  = (1./(4.*K))*((M1**2))*((pi/((2*N1)))**0.5)*((4.*N1*(argb(n))**2)+1.)*exp(-2*N1*(argb(n)**2))
+  Xx3(n)  = -1.*(((M1)**3)/(12.*K**2))*((pi/(3.*N1))**0.5)*((argb(n))**2)*(-1.*(36.*(N1)**2*((argb(n))**2)))*exp(-3.*N1*(argb(n))**2)
+  Xx4(n)  = (1.*(M1**4)/(48.*K**3))*((pi/(4.*N1))**0.5)*((-24.*N1*((argb(n))**2))-(192.*(N1**2)*(argb(n)**4))+(512.*(N1**3)*(argb(n)**6))-(3.))*exp((-4.*N1*(argb(n))**2))
+  Xx5(n)  = -(1.*(M1**5)/(240.*K**4))*((pi/(5.*N1))**0.5)*((8000.*(N1**3)*(argb(n)**6))-(10000.*(N1**4)*(argb(n)**8)))*exp((-5.*N1*(argb(n))**2))
 
-    Pb1(n)  = exp(-2.*Xx1(n)/Ap1)
-    Pb2(n)  = exp(-2.*Xx2(n)/Ap1)!(Xx2(n)+Xx1(n))/Ap1)
-    Pb3(n)  = exp(-2.*Xx3(n)/Ap1)!(Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
-    Pb4(n)  = exp(-2.*Xx4(n)/Ap1)!(Xx4(n)+Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
-    Pb5(n)  = exp(-2.*Xx5(n)/Ap1)!(Xx5(n)+Xx4(n)+Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
+  Pb1(n)  = exp(-2.*Xx1(n)/Ap1)
+  Pb2(n)  = exp(-2.*Xx2(n)/Ap1)!(Xx2(n)+Xx1(n))/Ap1)
+  Pb3(n)  = exp(-2.*Xx3(n)/Ap1)!(Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
+  Pb4(n)  = exp(-2.*Xx4(n)/Ap1)!(Xx4(n)+Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
+  Pb5(n)  = exp(-2.*Xx5(n)/Ap1)!(Xx5(n)+Xx4(n)+Xx3(n)+Xx2(n)+Xx1(n))/Ap1)
 enddo
 !$omp end parallel do
 
 do j = 1, 3 !Ap1
 ! ondrej, in thesis: for k=1:3;
-  binomcoeff = binom(Ap1,j)
-  !$omp parallel do
-  do n = 1, Ninterp ! ondrejch done todo - remove sections 1,2 from inner loop
+  binomcoeff = dble(binom(Ap1,j))
+  !$omp parallel do 
+  do n = 1, Ninterp 
     Zsum1(n)  = 2.*pi*((argb(n)*wb(n)*((1.-Pb1(n))**j)*((Pb1(n))**(Ap1-j))))
     ZCsum2(n) = 2.*pi*((argb(n)*wb(n)*((1.-Pb2(n))**j)*((Pb2(n))**(Ap1-j))))  ! shouldnt this be At1-j???
     ZCsum3(n) = 2.*pi*((argb(n)*wb(n)*((1.-Pb3(n))**j)*((Pb3(n))**(Ap1-j))))
@@ -143,7 +140,6 @@ do j = 1, 3 !Ap1
   Z5C(j) = binomcoeff*sum(ZCsumFive)    
 enddo
 
-
 Ksum1 = sum(Z1)
 Ksum2 = sum(Z2C)
 Ksum3 = sum(Z3C)
@@ -157,4 +153,3 @@ SigAbr4 = Ksum4  ! Abrasion with four correction terms
 SigAbr5 = Ksum5
 
 end subroutine abrasioncrs2
-

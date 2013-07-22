@@ -40,16 +40,15 @@ if (A<20)  then
   D1 = 1./(4.*(1. +0.52*gtab(A))*s**2)
 else 
 ! Gauss approximation to Wood Saxon Distribution 
-  ap = (-6e-5*(A)**2) +(0.0342*A) +2.0976;
-  gp = 0.000005*(A**2)-(0.0017*A) +2.5955; 
+  ap = (-6e-5*dble(A)**2) +(0.0342*dble(A)) +2.0976;
+  gp = 0.000005*(dble(A)**2)-(0.0017*dble(A)) +2.5955; 
   beta = exp(4.4*rp/(gp*sqrt(3.)));
   ta = (8.8*rp/sqrt(3.))*((log((3.*beta-1.)/(3.-beta)))**(-1));   
   rho02 = 1./(((4.*pi*(((ap**3)/3.)+ ((pi**2)*(ta**2)*ap/3.)))));
   C1 = (ap/gp)**0.3 *rho02;
   D1 = -0.0109*ap + 0.1234
 endif
+!print *," * density call, [C1,D1] = ",C1,D1
 
-print *," * density call, [s,C1,D1] = ",s,C1,D1
-!
 end subroutine density
 !
