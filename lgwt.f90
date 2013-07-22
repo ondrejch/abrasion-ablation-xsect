@@ -21,7 +21,7 @@ implicit none
 integer, intent (in) :: N
 real (dp),    intent (in) :: a, b
 real (dp), dimension (N), intent (out) :: x, w
-real (dp), parameter  :: eps = 1e-9
+real (dp), parameter  :: eps = 1e-15
 real (dp), parameter  :: pi = atan(1.)*4.
 real (dp), dimension (N) :: kx, ky, ky0
 ! Legendre-Gauss Vandermonde Matrix
@@ -66,9 +66,9 @@ j=j+1
 enddo
 
 ! Linear map from[-1,1] to [a,b]
-x=(a*(1.-ky)+b*(1.+ky))/2.
+x = (a*(1.-ky)+b*(1.+ky))/2.
 ! Compute the weights
-w=(b-a)/((1.-ky**2)*Kp**2)*(M2/M1)**2
+w = (b-a)/((1.-ky**2)*Kp**2)*(dble(M2)/dble(M1))**2
 
 end subroutine lgwt
 

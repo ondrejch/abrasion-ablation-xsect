@@ -75,7 +75,6 @@ K         = (PK)/(2.*hbarc*sin(AA/2.))
 
 ! the invariant in lab
 S         = ((Mp + Mt)**2)+ 2.*Mt*Tlab1
-
 ! Calculate the Slope Parameter 
 B        = 0.0389*(10. + 0.5*log(S/1000000.))
 
@@ -86,12 +85,13 @@ else ! Tlab1>25
   Sigpp = ((1.+(5./Tlab1))*(40.+(109.*(cos(0.199*((Tlab1)**0.5)))*exp(-0.451*((Tlab1-25.)**(0.258))))))/10.
 endif
 Sigpn  = (38.+12500.*exp(-1.187*(((Tlab1-0.1)**0.35))))/10.
-Sig    = (((Np+Nt)/(Ap1+At1))*(Sigpn))+Sigpp*((Zp1*Zt1+Np*Nt))/(Ap1*At1)
+Sig    = ((dble(Np+Nt)/dble(Ap1+At1))*Sigpn) + Sigpp*(dble(Zp1*Zt1+Np*Nt))/dble(Ap1*At1)
+print *,"Sigpp, Sigpn,Sig ",Sigpp, Sigpn,Sig
 
 ! Calculate the constant values for the potential
 W      = cDp + (1./(2.*B))
 V      = cDp - ((cDp**2)/W)
-M1     = Ap1*At1*cCp*cCt*Sig*((2.*pi*B)**(-1.5))*((pi/W)**1.5)*(((pi/(cDt+V))**1.5))
+M1     =  dble(Ap1*At1)*cCp*cCt*Sig*((2.*pi*B)**(-1.5))*((pi/W)**1.5)*(((pi/(cDt+V))**1.5))
 !!! ondrej, in thesis: M1= Ap1*At1*cCp*cCt*Sig*((2*pi*B)^(-1.55))*((pi/W)^1.5)*(((pi/(cDt+V))^1.5));
 N1     = V - ((V**2)/(cDt+V))
 
@@ -107,12 +107,9 @@ do n = 1, Ninterp ! ondrejch done todo - remove sections 1,2 from inner loop
     argb(n) = xb(n)
     Xx1(n)  = (M1/2.)*((pi/N1)**0.5)*exp(-N1*(argb(n))**2)
     Xx2(n)  = (1./(4.*K))*((M1**2))*((pi/((2*N1)))**0.5)*((4.*N1*(argb(n))**2)+1.)*exp(-2*N1*(argb(n)**2))
-    Xx3(n)  = -1.*(((M1)**3)/(12.*K**2))*((pi/(3.*N1))**0.5)*((argb(n))**2)*(-1.*(36.*(N1)**2*((argb(n))**2)))*&
-exp(-3.*N1*(argb(n))**2)
-    Xx4(n)  = (1.*(M1**4)/(48.*K**3))*((pi/(4.*N1))**0.5)*((-24.*N1*((argb(n))**2))-(192.*(N1**2)*(argb(n)**4))+&
-(512.*(N1**3)*(argb(n)**6))-(3.))*exp((-4.*N1*(argb(n))**2))
-    Xx5(n)  = -(1.*(M1**5)/(240.*K**4))*((pi/(5.*N1))**0.5)*((8000.*(N1**3)*(argb(n)**6))-&
-(10000.*(N1**4)*(argb(n)**8)))*exp((-5.*N1*(argb(n))**2))
+    Xx3(n)  = -1.*(((M1)**3)/(12.*K**2))*((pi/(3.*N1))**0.5)*((argb(n))**2)*(-1.*(36.*(N1)**2*((argb(n))**2)))*exp(-3.*N1*(argb(n))**2)
+    Xx4(n)  = (1.*(M1**4)/(48.*K**3))*((pi/(4.*N1))**0.5)*((-24.*N1*((argb(n))**2))-(192.*(N1**2)*(argb(n)**4))+(512.*(N1**3)*(argb(n)**6))-(3.))*exp((-4.*N1*(argb(n))**2))
+    Xx5(n)  = -(1.*(M1**5)/(240.*K**4))*((pi/(5.*N1))**0.5)*((8000.*(N1**3)*(argb(n)**6))-(10000.*(N1**4)*(argb(n)**8)))*exp((-5.*N1*(argb(n))**2))
 
     Pb1(n)  = exp(-2.*Xx1(n)/Ap1)
     Pb2(n)  = exp(-2.*Xx2(n)/Ap1)!(Xx2(n)+Xx1(n))/Ap1)
@@ -122,7 +119,7 @@ exp(-3.*N1*(argb(n))**2)
 enddo
 !$omp end parallel do
 
-do j = 1, Ap1
+do j = 1, 3 !Ap1
 ! ondrej, in thesis: for k=1:3;
   binomcoeff = binom(Ap1,j)
   !$omp parallel do
@@ -134,9 +131,9 @@ do j = 1, Ap1
     ZCsum5(n) = 2.*pi*((argb(n)*wb(n)*((1.-Pb5(n))**j)*((Pb5(n))**(Ap1-j))))    
     
     ZCsumTwo(n)   = Zsum1(n)+ZCsum2(n)+ZCsum3(n);
-!    ZCsumThree(n) = ZCsum3(n)!;%+ZCsum2(n)+ZCsum3(n);
-    ZCsumFour(n)  = Zsum1(n)+ZCsum2(n)+ZCsum3(n)+ZCsum4(n);
-!    ZCsumFive(n)  = ZCsum5(n)!;%+ZCsum2(n)+ZCsum3(n)+ZCsum4(n)+ZCsum5(n);
+    ZCsumThree(n) = ZCsum3(n)!;%+ZCsum2(n)+ZCsum3(n);
+    ZCsumFour(n)  = Zsum1(n)+ZCsum2(n)+ZCsum3(n)+ZCsum4(n)+ZCsum5(n);
+    ZCsumFive(n)  = ZCsum5(n)!;%+ZCsum2(n)+ZCsum3(n)+ZCsum4(n)+ZCsum5(n);
   enddo
   !$omp end parallel do
   Z1(j)  = binomcoeff*sum(Zsum1)

@@ -48,6 +48,8 @@ else
   C1 = (ap/gp)**0.3 *rho02;
   D1 = -0.0109*ap + 0.1234
 endif
+
+print *," * density call, [s,C1,D1] = ",s,C1,D1
 !
 end subroutine density
 !

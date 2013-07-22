@@ -5,8 +5,7 @@ use types_module
 implicit none
 real (dp), parameter :: pi = atan(1.)*4.
 real (dp), parameter :: hbar = 197.327       ! http://physics.nist.gov/cgi-bin/cuu/Value?hbcmevf
-real (dp), parameter :: am  = 937.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
-real (dp), parameter :: amp = (am-7.)        ! Atomic mass MeV ! wiki:    931.494061(21)
+real (dp), parameter :: am  = 939.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
 integer, parameter :: N = 50                 ! steps in energy
 integer, parameter :: maxBinomA = 1750! 170        ! largest A for which we can calculate binomial coefficient
 real (dp), dimension(N) :: Ek, W, TL, EF, Plab, Pf, PFL, PFT, PFF, EK1, EZK
@@ -24,15 +23,16 @@ real (dp) :: H, Emin, Emax, PNN, T0lab, E0lab, P0lab, Gamma, Beta
 real (dp) :: SigA, SigA1, SigA2, SigAt, SigA1t, SigA2t
 real (dp) :: Ebeam, Pbeam, Pn, Tn, Gamman, Betan
 real (dp) :: KF, P1, P2, P3, C1, C2, C3, N0
-integer :: i
+integer   :: i
 
-real (dp)    :: Tlab            ! projectile lab energy [MeV]
-integer :: Ap              ! projectile A
-integer :: At              ! target A
-integer :: Zp              ! projectile Z
-integer :: Zt              ! target Z
-real (dp)    :: theta           ! scattering angle [deg]
-real (dp)    :: AA              ! scattering angle [radians]
+real (dp) :: Tlab       ! projectile lab energy [MeV]
+real (dp) :: amp        ! total projectile mass MeV 
+integer   :: Ap         ! projectile A
+integer   :: At         ! target A
+integer   :: Zp         ! projectile Z
+integer   :: Zt         ! target Z
+real (dp) :: theta      ! scattering angle [deg]
+real (dp) :: AA         ! scattering angle [radians]
 
 print *,'Enter projectile energy in lab [MeV] '; read *,Tlab
 print *,'Enter projectile mass number ';         read *,Ap
@@ -58,7 +58,9 @@ if ((theta<0.) .or. (theta>180.)) then
   print *,"Scattering angle needs to be between 0 and 180"; stop
 endif
 
-AA = (theta*pi/180.)    ! degrees -> radians
+amp = dble(Ap)*(am-7.)   ! total projectile mass
+AA  = (theta*pi/180.)    ! degrees -> radians
+!print *,"AA ", AA
 
 ! Calcualte the energy grid for outgoing Nucleon energy
 Emin = 5.00             ! MeV
@@ -66,7 +68,7 @@ Emax = 3.*Tlab          ! MeV
 
 Ek(1)  = Emin
 Ek(N)  = Emax
-H      = 1.*(Emax-Emin)/(N-1.)
+H      = (Emax-Emin)/dble(N-1)
 W(1)   = H/2.
 
 do i = 2, N-1
@@ -76,15 +78,15 @@ enddo
 
 ! Incoming Beam Calculations
 PNN   = sqrt(((Tlab+am)**2) - am**2)
-T0lab = Tlab*Ap
+T0lab = Tlab*dble(Ap)
 E0lab = T0lab + amp
 P0lab = sqrt((E0lab**2) - amp**2)
 Gamma = 1. + Tlab/am
 Beta  = sqrt(1. - (1./Gamma)**2)
-!print *, PNN, T0lab, E0lab, P0lab, Gamma, Beta
+print *,"PNN, T0lab, E0lab, P0lab, Gamma, Beta ", PNN, T0lab, E0lab, P0lab, Gamma, Beta
 
 ! incoming nucleon
-Ebeam = E0lab/Ap
+Ebeam = E0lab/dble(Ap)
 if(am>Ebeam) then
   print *, ' *** Negative beam momentum!';  stop
 endif
@@ -93,7 +95,7 @@ Pn    = Pbeam
 Tn    = sqrt(am**2 + Pn**2) - am
 Gamman= 1. + Tn/am
 Betan = sqrt(1.-(1./Gamman)**2)
-!print *,Ap,Ebeam**2 - am**2, Ebeam, Pbeam, Gamman, Betan
+print *,"Ap, Ebeam, Pbeam, Gamman, Betan ",Ap, Ebeam, Pbeam, Gamman, Betan
 
 ! Calculation for nucleon momentum in projectile rest frame
 do i = 1,N
@@ -126,7 +128,9 @@ N0 = 1./((C1*(2.*pi*P1**2)**1.5)+(C2*(2.*pi*P2**2)**1.5)+((C3*(2.*pi*P3**2)**1.5
 ! [SigA,SigA1,SigA2]=AbrasionCrs1(Tlab,Ap,At,Zp,Zt,AA)   %projectile
 ! [SigAt,SigA1t,SigA2t]=AbrasionCrs2(Tlab,At,Ap,Zt,Zp,AA) %Target 
 call abrasioncrs1(SigA, SigA1, SigA2, Tlab, Ap, At, Zp, Zt, AA)
+print *," * abr1 call, [SigA, SigA1, SigA2] = ", SigA, SigA1, SigA2
 call abrasioncrs2(SigAt,SigA1t,SigA2t,Tlab, At, Ap, Zt, Zp, AA)
+print *," * abr1 call, [SigAt, SigA1t, SigA2t] = ", SigAt, SigA1t, SigA2t
 
 ! Calulation of Lorentz Invariant and Double Differential %%
 do i = 1,N   
