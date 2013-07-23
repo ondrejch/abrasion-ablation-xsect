@@ -1,5 +1,5 @@
 ! program prglwt
-!use types_module
+! use types_module
 ! implicit none
 ! integer,parameter :: n = 10
 ! real (dp) :: a = 1,b = 2
@@ -38,8 +38,7 @@ tmpx=-1.; tmpy=1.
 kx = [(tmpx+ dble(i)*(tmpy-tmpx)/dble(N-1),i=0,N-1)]
 
 ! Initial guess
-!y=cos((2*(0:N)'+1)*pi/(2*N+2))+(0.27/M1)*sin(pi*kx*N/M2);
-ky = [(cos((2.*dble(i)+1.)*pi/(2.*dble(N1)+2.))+(0.27/dble(M1))*sin(pi*kx(i+1)*dble(N1)/dble(M2)),i=0,n-1) ]
+ky = [(cos((2.*dble(i)+1.)*pi/(2.*dble(N1)+2.))+(0.27/dble(M1))*sin(pi*kx(i+1)*dble(N1)/dble(M2)),i=0,n-1)]
 
 ! Compute the zeros of the N+1 Legendre Polynomial
 ! using the recursion relation and the Newton-Raphson method

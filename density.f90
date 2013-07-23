@@ -1,5 +1,5 @@
 ! program prgdensity
-!use types_module
+! use types_module
 ! implicit none
 ! integer :: A ! atomic number	
 ! real (dp)    :: C1, D1
@@ -10,20 +10,18 @@
 ! enddo
 ! end program prgdensity
 
-
 subroutine density(A, C1, D1)
 ! This subroutine calculates the nuclear single particle densities
 use types_module
 implicit none
-integer, intent (in)  :: A
-real (dp), intent (out) :: C1, D1
-real (dp), parameter  :: pi = atan(1.)*4.
-real (dp)::  s, D, A1, B, rho0
+integer, intent (in)      :: A
+real (dp), intent (out)   :: C1, D1
+real (dp), parameter      :: pi = atan(1.)*4.
+real (dp), dimension (20) :: atab, gtab 
+real (dp) :: s, D, A1, B, rho0
 real (dp) :: ap, gp, beta, ta, rho02
 real (dp) :: rp = 0.87
-real (dp), dimension (20) :: atab, gtab 
-!integer :: i
-!
+
 if (A<20)  then
 ! Gauss approximation to Harmonic Well Distriutions
 ! Values up to A=16 from Dejager and Devries A from 16-20 expratoplated
@@ -51,4 +49,3 @@ endif
 !print *," * density call, [C1,D1] = ",C1,D1
 
 end subroutine density
-!

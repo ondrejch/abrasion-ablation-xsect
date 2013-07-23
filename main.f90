@@ -4,7 +4,6 @@ program xsect
 use types_module
 implicit none
 real (dp), parameter :: pi = atan(1.)*4.
-!real (dp), parameter :: hbar = 197.327       ! http://physics.nist.gov/cgi-bin/cuu/Value?hbcmevf
 real (dp), parameter :: am  = 937.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
 integer, parameter :: N = 50                 ! steps in energy
 integer, parameter :: maxBinomA = 1750! 170        ! largest A for which we can calculate binomial coefficient
@@ -125,13 +124,10 @@ enddo
 ! Normalization Constant
 N0 = 1./((C1*(2.*pi*P1**2)**1.5)+(C2*(2.*pi*P2**2)**1.5)+((C3*(2.*pi*P3**2)**1.5)))
 
-! Call the function get the Abrasion cross section%%%%%
-! 
-! [SigA,SigA1,SigA2]=AbrasionCrs1(Tlab,Ap,At,Zp,Zt,AA)   %projectile
-! [SigAt,SigA1t,SigA2t]=AbrasionCrs2(Tlab,At,Ap,Zt,Zp,AA) %Target 
-call abrasioncrs1(SigA, SigA1, SigA2, Tlab, Ap, At, Zp, Zt, AA)
+! Call the function get the Abrasion cross section
+call abrasion(SigA, SigA1, SigA2, Tlab, Ap, At, Zp, Zt, AA)
 print *," * abr1 [SigA, SigA1, SigA2] = ", SigA, SigA1, SigA2
-call abrasioncrs2(SigAt,SigA1t,SigA2t,Tlab, At, Ap, Zt, Zp, AA)
+call abrasion(SigAt,SigA1t,SigA2t,Tlab, At, Ap, Zt, Zp, AA)
 print *," * abr2 [SigAt, SigA1t, SigA2t] = ", SigAt, SigA1t, SigA2t
 
 ! Calulation of Lorentz Invariant and Double Differential %%
