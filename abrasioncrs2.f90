@@ -116,7 +116,7 @@ do n = 1, Ninterp
 enddo
 !$omp end parallel do
 
-do j = 1, 3 !Ap1
+do j = 1, Ap1
 ! ondrej, in thesis: for k=1:3;
   binomcoeff = dble(binom(Ap1,j))
   !$omp parallel do 

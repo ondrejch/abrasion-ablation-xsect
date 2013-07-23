@@ -5,7 +5,7 @@ use types_module
 implicit none
 real (dp), parameter :: pi = atan(1.)*4.
 !real (dp), parameter :: hbar = 197.327       ! http://physics.nist.gov/cgi-bin/cuu/Value?hbcmevf
-real (dp), parameter :: am  = 939.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
+real (dp), parameter :: am  = 937.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
 integer, parameter :: N = 50                 ! steps in energy
 integer, parameter :: maxBinomA = 1750! 170        ! largest A for which we can calculate binomial coefficient
 real (dp), dimension(N) :: Ek, W, TL, EF, Plab, Pf, PFL, PFT, PFF, EK1, EZK
