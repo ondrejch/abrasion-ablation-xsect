@@ -4,9 +4,10 @@ program xsect
 use types_module
 implicit none
 real (dp), parameter :: pi = atan(1.)*4.
-real (dp), parameter :: am  = 937.57         ! Mass of Neutron MeV ! wiki: 939.565378(21)
+real (dp), parameter :: neutronmass =  939.565378  ! Mass of Neutron  MeV
+real (dp), parameter :: atomicmass  =  931.494061  ! Atomic mass unit MeV
 integer, parameter :: N = 50                 ! steps in energy
-integer, parameter :: maxBinomA = 1750! 170        ! largest A for which we can calculate binomial coefficient
+integer, parameter :: maxBinomA = 1750       ! largest A for which we can calculate binomial coefficient
 real (dp), dimension(N) :: Ek, W, TL, EF, Plab, Pf, PFL, PFT, PFF, EK1, EZK
 real (dp), dimension(N) :: NuMom, NuMom1, NuMom2, NuMom3
 real (dp), dimension(N) :: NuMomc2, NuMom1c2, NuMom2c2, NuMom3c2
@@ -30,15 +31,15 @@ integer   :: Ap         ! projectile A
 integer   :: At         ! target A
 integer   :: Zp         ! projectile Z
 integer   :: Zt         ! target Z
-real (dp) :: theta      ! scattering angle [deg]
-real (dp) :: AA         ! scattering angle [radians]
+real (dp) :: thetadeg   ! scattering thetarad [deg]
+real (dp) :: thetarad   ! scattering thetarad [radians]
 
 print *,'Enter projectile energy in lab [MeV] '; read *,Tlab
 print *,'Enter projectile mass number ';         read *,Ap
 print *,'Enter projectile proton number ';       read *,Zp
 print *,'Enter target mass number ';             read *,At
 print *,'Enter target proton number ';           read *,Zt
-print *,'Enter scattering angle [deg] ';         read *,theta
+print *,'Enter scattering angle [deg] ';         read *,thetadeg
 
 ! sanity checks
 if (Ap<Zp) then
@@ -53,13 +54,13 @@ endif
 if ((Ap>maxBinomA) .or. (At>maxBinomA)) then
   print *,"Maximum atomic number we support is ", maxBinomA; stop
 endif
-if ((theta<0.) .or. (theta>180.)) then
+if ((thetadeg<0.) .or. (thetadeg>180.)) then
   print *,"Scattering angle needs to be between 0 and 180"; stop
 endif
 
-amp = dble(Ap)*(am-7.)   ! total projectile mass
-AA  = (theta*pi/180.)    ! degrees -> radians
-!print *,"AA ", AA
+amp = dble(Ap)*atomicmass         ! total projectile mass
+thetarad  = (thetadeg*pi/180.)    ! degrees -> radians
+!print *,"thetarad ", thetarad
 
 ! Calcualte the energy grid for outgoing Nucleon energy
 Emin = 5.00             ! MeV
@@ -76,23 +77,23 @@ do i = 2, N-1
 enddo
 
 ! Incoming Beam Calculations
-PNN   = sqrt(((Tlab+am)**2) - am**2)
+PNN   = sqrt(((Tlab+neutronmass)**2) - neutronmass**2)
 T0lab = Tlab*dble(Ap)
 E0lab = T0lab + amp
 P0lab = sqrt((E0lab**2) - amp**2)
-Gamma = 1. + Tlab/am
+Gamma = 1. + Tlab/neutronmass
 Beta  = sqrt(1. - (1./Gamma)**2)
 !print *,"PNN, T0lab, E0lab, P0lab, Gamma, Beta ", PNN, T0lab, E0lab, P0lab, Gamma, Beta
 
 ! incoming nucleon
 Ebeam = E0lab/dble(Ap)
-if(am>Ebeam) then
+if(neutronmass>Ebeam) then
   print *, ' *** Negative beam momentum!';  stop
 endif
-Pbeam = sqrt(Ebeam**2 - am**2)
+Pbeam = sqrt(Ebeam**2 - neutronmass**2)
 Pn    = Pbeam
-Tn    = sqrt(am**2 + Pn**2) - am
-Gamman= 1. + Tn/am
+Tn    = sqrt(neutronmass**2 + Pn**2) - neutronmass
+Gamman= 1. + Tn/neutronmass
 Betan = sqrt(1.-(1./Gamman)**2)
 !print *,"Ap, Ebeam, Pbeam, Gamman, Betan ",Ap, Ebeam, Pbeam, Gamman, Betan
 
@@ -100,14 +101,14 @@ Betan = sqrt(1.-(1./Gamman)**2)
 !$omp parallel do 
 do i = 1,N
   TL(i)  = Ek(i)
-  EF(i)  = TL(i) + am                      ! Lab Frame Nucleon energy
-  Plab(i)= sqrt((EF(i))**2-am**2)          ! Lab Frame Momentum
+  EF(i)  = TL(i) + neutronmass                      ! Lab Frame Nucleon energy
+  Plab(i)= sqrt((EF(i))**2-neutronmass**2)          ! Lab Frame Momentum
   Pf(i)  = Plab(i)
   PFL(i) = Gamman*(Pf(i)-(Betan*EF(i)))
-  PFT(i) = Pf(i)*sin(AA)
+  PFT(i) = Pf(i)*sin(thetarad)
   PFF(i) = sqrt((PFL(i))**2 + (PFT(i))**2) ! Projectile rest frame 
-  EK1(i) = sqrt((PFF(i))**2 + am**2)
-  EZK(i) = sqrt((Plab(i))**2 + am**2)  
+  EK1(i) = sqrt((PFF(i))**2 + neutronmass**2)
+  EZK(i) = sqrt((Plab(i))**2 + neutronmass**2)  
 !print *,i,EF(i),EK1(i),EZK(i)
 enddo
 !$omp end parallel do  
@@ -125,9 +126,9 @@ enddo
 N0 = 1./((C1*(2.*pi*P1**2)**1.5)+(C2*(2.*pi*P2**2)**1.5)+((C3*(2.*pi*P3**2)**1.5)))
 
 ! Call the function get the Abrasion cross section
-call abrasion(SigA, SigA1, SigA2, Tlab, Ap, At, Zp, Zt, AA)
+call abrasion(SigA, SigA1, SigA2, Tlab, Ap, At, Zp, Zt, thetarad)
 print *," * abr1 [SigA, SigA1, SigA2] = ", SigA, SigA1, SigA2
-call abrasion(SigAt,SigA1t,SigA2t,Tlab, At, Ap, Zt, Zp, AA)
+call abrasion(SigAt,SigA1t,SigA2t,Tlab, At, Ap, Zt, Zp, thetarad)
 print *," * abr2 [SigAt, SigA1t, SigA2t] = ", SigAt, SigA1t, SigA2t
 
 ! Calulation of Lorentz Invariant and Double Differential %%

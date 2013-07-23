@@ -1,19 +1,18 @@
-subroutine abrasion(SigAbr, SigAbr2, SigAbr4, Tlab, Aproj, Atarg, Zproj, Ztarg, angle)
+subroutine abrasion(SigAbr, SigAbr2, SigAbr4, Tlab, Aproj, Atarg, Zproj, Ztarg, thetarad)
 ! This function calculates the Abrasion cross section for the projectile
 use binomial_module
 use types_module
 implicit none
-real (dp),  intent (in) :: Tlab, angle
+real (dp),  intent (in) :: Tlab, thetarad
 integer, intent (in)    :: Aproj, Atarg, Zproj, Ztarg
 real (dp),  intent (out):: SigAbr, SigAbr2, SigAbr4
 real (dp)               :: SigAbr3, SigAbr5
 real (dp),    parameter :: pi = atan(1.)*4.
 real (dp),    parameter :: r0 = 1.26         ! Constant for radius calculation (fm)
-real (dp),    parameter :: am = 937.57       ! Mass of Neutron MeV
-real (dp),    parameter :: amt= (am-7.)      ! Atomic mass MeV
-real (dp),    parameter :: hbarc = 197.326   ! MeV fm
-!real (dp), parameter :: hbar = 197.327       ! http://physics.nist.gov/cgi-bin/cuu/Value?hbcmevf
-integer, parameter :: Ninterp=1000      ! number of Gauss interpolatoion points
+real (dp),    parameter :: neutronmass = 939.565378   ! Mass of Neutron MeV
+real (dp),    parameter :: atomicmass  = 931.494061   ! Atomic mass unit MeV
+real (dp),    parameter :: hbarc = 197.327   ! MeV fm ! http://physics.nist.gov/cgi-bin/cuu/Value?hbcmevf
+integer, parameter      :: Ninterp = 1000    ! number of Gauss interpolatoion points
 real (dp), dimension(Ninterp) :: x1, w1, triarg, xb, wb, argb
 real (dp), dimension(Ninterp) :: Xx1, Xx2, Xx3, Xx4, Xx5
 real (dp), dimension(Ninterp) :: Pb1, Pb2, Pb3, Pb4, Pb5
@@ -32,8 +31,8 @@ Nproj = Aproj-Zproj                  ! Number of Neutrons in the projectile
 Ntarg = Atarg-Ztarg                  ! Number of Neutrons in the Target
 Rp    = r0*((Aproj)**(1./3.))        ! Projectile radius (fm)
 Rt    = r0*((Atarg)**(1./3.))        ! Target Radius (fm)
-Mp    = Aproj*amt                    ! Projectile total mass
-Mt    = Atarg*amt                    ! Target total mass
+Mp    = Aproj*atomicmass             ! Projectile total mass
+Mt    = Atarg*atomicmass             ! Target total mass
 
 ! The values for density parameters taken from Dejager and Devries..
 ! Call Density function %
@@ -44,21 +43,21 @@ call density(Atarg, Ctarg, Dtarg)
 ! Call lgwt to do the Gauss Quadrature, Calculate the Gauss points for N=1000
 tmpa= -1; tmpb = 1
 call lgwt(x1,w1,Ninterp,tmpa,tmpb)
-Mp = Aproj*amt                        ! Projectile total mass
-Mt = Atarg*amt                        ! Target total mass
+Mp = Aproj*atomicmass                        ! Projectile total mass
+Mt = Atarg*atomicmass                        ! Target total mass
 !print *, x1(300), w1(300)
 
 ! The values for density parameters taken from Dejager and Dev
 
 ! Calcualtion of energy and momentum in lab and projectile frame
-Elab    = Tlab + am
-gamma   = 1. + Tlab/am
+Elab    = Tlab + neutronmass
+gamma   = 1. + Tlab/neutronmass
 beta    = sqrt(1.-(1./gamma)**2)
-Plab    = sqrt(Elab**2-am**2)
-PfL     = gamma*(Plab*cos(angle)-beta*Elab)
-PfT     = Plab*sin(angle)
+Plab    = sqrt(Elab**2-neutronmass**2)
+PfL     = gamma*(Plab*cos(thetarad)-beta*Elab)
+PfT     = Plab*sin(thetarad)
 PK      = sqrt(PfL**2+PfT**2)
-K       = (PK)/(2.*hbarc*sin(angle/2.))
+K       = (PK)/(2.*hbarc*sin(thetarad/2.))
 !print *,Elab, gamma, beta,Plab,PfL,PfT,PK,K
 
 ! the invariant in lab
@@ -68,7 +67,7 @@ B        = 0.0389*(10. + 0.5*log(S/1000000.))
 !print *,"S,B ", S,B
 
 ! Calculate the nucleon-nucleon parameters
-if (Tlab<=25.) then 
+if (Tlab <= 25.) then 
   Sigpp = exp(6.51*(exp(-Tlab/135.)**0.7))/10.
 else ! Tlab>25
   Sigpp = ((1.+(5./Tlab))*(40.+(109.*(cos(0.199*((Tlab)**0.5)))*exp(-0.451*((Tlab-25.)**(0.258))))))/10.
